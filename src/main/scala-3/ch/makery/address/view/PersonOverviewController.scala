@@ -37,3 +37,36 @@ class PersonOverviewController():
 
     lastNameLabel.text <== mytext.text
 
+  private def showPersonDetails(person: Option[Person]): Unit = //option value have 2 types (some & none)
+    person match
+      case Some(person) =>
+        // Fill the labels with info from the person object.
+        firstNameLabel.text <== person.firstName
+        lastNameLabel.text <== person.lastName
+        streetLabel.text <== person.street
+        cityLabel.text <== person.city;
+        //postalCodeLabel.text = person.postalCode.value.toString //object property; = just to test column
+        postalCodeLabel.text <== person.postalCode.delegate.asString() //binding; object convert to into a string binding then binding it into a string property 
+
+      case None =>
+        // Person is null, remove all the text.
+        //need to unbind first because subscriber cannot change value, then only can set the text to empty
+        firstNameLabel.text.unbind()
+        firstNameLabel.text = ""
+
+        lastNameLabel.text.unbind()
+        lastNameLabel.text = ""
+
+        streetLabel.text.unbind()
+        streetLabel.text = ""
+
+        postalCodeLabel.text.unbind()
+        postalCodeLabel.text = ""
+
+        cityLabel.text.unbind()
+        cityLabel.text = ""
+
+        birthdayLabel.text.unbind()
+        birthdayLabel.text = ""
+
+
