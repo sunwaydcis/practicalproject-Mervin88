@@ -91,4 +91,8 @@ object MainApp extends JFXApp3:
   personData += new Person("Anna", "Best")
   personData += new Person("Stefan", "Meier")
   personData += new Person("Martin", "Mueller")
-   
+
+  extension (value: Int)
+    def area: Double = 3.142 * value * value 
+  
+  println(34.area)
