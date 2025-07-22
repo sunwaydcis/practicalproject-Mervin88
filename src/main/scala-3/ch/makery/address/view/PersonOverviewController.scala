@@ -7,7 +7,9 @@ import scalafx.Includes.*
 import javafx.scene.control.TextField
 import ch.makery.address.util.DateUtil.*
 import javafx.event.ActionEvent
-import scalafx.beans.binding.Bindings //all the string & local date inside this source code will have extension
+import scalafx.beans.binding.Bindings
+import scalafx.scene.control.Alert
+import scalafx.scene.control.Alert.AlertType //all the string & local date inside this source code will have extension
 
 @FXML
 class PersonOverviewController():
@@ -87,9 +89,45 @@ class PersonOverviewController():
 
   @FXML //this method is bind to a FXML file
   def handleDeletePerson(action: ActionEvent): Unit = //actionevent - refer to button click
-    val selectedIndex = personTable.selectionModel().selectedIndex.value //selected intex - which row
-    if (selectedIndex >= 0) then
-      personTable.items().remove(selectedIndex);
+    val selectedIndex = personTable.selectionModel().selectedIndex.value //selected index - which row
+    if (selectedIndex >= 0) then //selectedIndex - integer, if is >= 0 only will remove
+      personTable.items().remove(selectedIndex); //personTable - is a table view object
+      //MainApp.personData.remove(selectedIndex)
+    else
+      // Nothing selected. customize dialog
+      val alert = new Alert(AlertType.Warning): //alert is a predefine window, can change the AlertType.Error
+        initOwner(MainApp.stage) //per define dialog is a window, from 1 window to another window, we must keep track on the relationship (call warning window will fall back to the stage window)
+        title = "No Selection"
+        headerText = "No Person Selected"
+        contentText = "Please select a person in the table."
+      alert.showAndWait()
+
+  @FXML
+  def handleNewPerson(action: ActionEvent) =
+    val person = new Person("", "") //when someone click new botton, it create the person with empty first and last name
+    val okClicked = MainApp.showPersonEditDialog(person); //pass in the person that u created
+    if (okClicked) then //wait for the return value
+      MainApp.personData += person //if ok append the person to ur collection
+
+  @FXML
+  def handleEditPerson(action: ActionEvent) =
+    val selectedPerson = personTable.selectionModel().selectedItem.value //need to make sure user select an user to edit
+    if (selectedPerson != null) then //check is null anot
+      val okClicked = MainApp.showPersonEditDialog(selectedPerson) //if not null, show
+
+      if (okClicked) then showPersonDetails(Some(selectedPerson)) //if select ok, show selected person details
+
+    else
+      // Nothing selected.
+      val alert = new Alert(Alert.AlertType.Warning):
+        initOwner(MainApp.stage)
+        title = "No Selection"
+        headerText = "No Person Selected"
+        contentText = "Please select a person in the table."
+      alert.showAndWait()
+
+
+
 
 
 
