@@ -5,6 +5,10 @@ import javafx.fxml.FXML
 import javafx.scene.control.{Label, TableColumn, TableView}
 import scalafx.Includes.*
 import javafx.scene.control.TextField
+import ch.makery.address.util.DateUtil.*
+import javafx.event.ActionEvent
+import scalafx.beans.binding.Bindings //all the string & local date inside this source code will have extension
+
 @FXML
 class PersonOverviewController():
   @FXML
@@ -36,6 +40,13 @@ class PersonOverviewController():
     lastNameColumn.cellValueFactory  = {_.value.lastName} //S is person, T is string
 
     lastNameLabel.text <== mytext.text
+    showPersonDetails(None)
+
+    //bind the property, everytime it change it call the property
+    personTable.selectionModel().selectedItem.onChange( //use option - new value can be mull
+      (_, _, newValue) => showPersonDetails(Option(newValue)) //selection - to check which item user selected thn the selected item will change
+    )
+
 
   private def showPersonDetails(person: Option[Person]): Unit = //option value have 2 types (some & none)
     person match
@@ -47,6 +58,11 @@ class PersonOverviewController():
         cityLabel.text <== person.city;
         //postalCodeLabel.text = person.postalCode.value.toString //object property; = just to test column
         postalCodeLabel.text <== person.postalCode.delegate.asString() //binding; object convert to into a string binding then binding it into a string property 
+        //birthday
+        //birthdayLabel.text   = person.date.value.asString  //person.date is object property, .value will return local date & local data will have a as string method
+        //bind local date, need to create the binding method first
+        birthdayLabel.text <== Bindings.createStringBinding(() => {person.date.value.asString}, person.date)
+
 
       case None =>
         // Person is null, remove all the text.
@@ -68,5 +84,12 @@ class PersonOverviewController():
 
         birthdayLabel.text.unbind()
         birthdayLabel.text = ""
+
+  @FXML //this method is bind to a FXML file
+  def handleDeletePerson(action: ActionEvent): Unit = //actionevent - refer to button click
+    val selectedIndex = personTable.selectionModel().selectedIndex.value //selected intex - which row
+    if (selectedIndex >= 0) then
+      personTable.items().remove(selectedIndex);
+
 
 
