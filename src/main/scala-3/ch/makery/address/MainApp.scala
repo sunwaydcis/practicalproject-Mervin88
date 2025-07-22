@@ -1,20 +1,26 @@
 package ch.makery.address
 
 import ch.makery.address.model.Person
+import ch.makery.address.view.{PersonEditDialogController, PersonOverviewController}
 import javafx.fxml.FXMLLoader
 import scalafx.application.JFXApp3
 import scalafx.application.JFXApp3.PrimaryStage
-import scalafx.scene.Scene
+import scalafx.scene.{Scene, control}
 import scalafx.Includes.*
 import javafx.scene as jfxs
 import scalafx.beans.property.StringProperty
 import scalafx.collections.ObservableBuffer
+import scalafx.scene.image.Image
+import scalafx.stage.{Modality, Stage}
 
 object MainApp extends JFXApp3:
 
   //Window Root Pane
   //none object
-  var roots: Option[scalafx.scene.layout.BorderPane] = None //option value to store the root panel 
+  var roots: Option[scalafx.scene.layout.BorderPane] = None //option value to store the root panel
+
+  var cssResource = getClass.getResource("view/DarkTheme.css")
+  var personOverviewController : Option[PersonOverviewController] = None //it will be initialize showpersonOverview is call at least 1 times
 
   override def start(): Unit =
     // transform path of RootLayout.fxml to URI for resource location.
@@ -30,8 +36,10 @@ object MainApp extends JFXApp3:
 
     stage = new PrimaryStage():
       title = "AddressApp"
+      icons += new Image(getClass.getResource("/images/book.png").toExternalForm) //appear at the primary stage, not in the scene
       scene = new Scene(): //code block
         root = roots.get //point to the container, thn display together
+        stylesheets = Seq(cssResource.toExternalForm) //to set the stylesheet to be used under this empty dialog
 
     // call to display PersonOverview when app start
     showPersonOverview()
@@ -41,6 +49,8 @@ object MainApp extends JFXApp3:
     val loader = new FXMLLoader(resource)
     loader.load()
     val roots = loader.getRoot[jfxs.layout.AnchorPane] //load anchor pane
+    val ctrl = loader.getController[PersonOverviewController] //used to bridge
+    personOverviewController = Option(ctrl) //used to bridge
     this.roots.get.center = roots //set to the center
 
   //String Property have publisher (data) & subscriber (require data)
@@ -96,3 +106,22 @@ object MainApp extends JFXApp3:
     def area: Double = 3.142 * value * value 
   
   println(34.area)
+
+  def showPersonEditDialog(person: Person): Boolean =
+    val resource = getClass.getResource("view/PersonEditDialog.fxml") //load the PersonEditDialog.fxml
+    val loader = new FXMLLoader(resource)
+    loader.load();
+    val roots2 = loader.getRoot[jfxs.Parent] //get the anchor pane; Parent is the abstract class (all anchor, text, label); all the object inside
+    val control = loader.getController[PersonEditDialogController] //get the reference of the controller and pass in the controller type
+
+    val dialog = new Stage(): //create own new window
+      initModality(Modality.ApplicationModal) //set the behavior of the window; modality - if user hide the window it will hide behind or stay on top
+      initOwner(stage) //second window, need to set if this window is close set back to stage window
+      scene = new Scene: //create new scene
+        root = roots2 //assign root2 to display
+        stylesheets = Seq(cssResource.toExternalForm) //to set the stylesheet to be used under this empty dialog
+
+    control.dialogStage = dialog //at first dialogstage is set to now, now assign it
+    control.person = person //call the setter to set to the person parameter
+    dialog.showAndWait() //window pop out and wait to be close
+    control.okClicked //return boolean
